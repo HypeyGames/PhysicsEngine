@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace HyperPhysics
@@ -10,17 +9,38 @@ namespace HyperPhysics
 
         [field: SerializeField] public float Radius { get; set; }
 
-        public override float CheckForCollision(Collider other)
+        public override Collision CheckForCollision(Collider other)
         {
             switch (other.ColliderType)
             {
                 case ColliderTypes.Sphere:
-                    var radius = (other as SphereCollider).Radius;
+
+                    var collision = new Collision();
+
+                    var collisionType = other.Static ? 0 : 1;
+                    collisionType += Static ? 0 : 2;
+                    collision.CollisionType = (CollisionType)collisionType;
+
                     var distance = Vector3.Distance(Position, other.Position);
-                    return distance - (radius + Radius);
+                    var radius = (other as SphereCollider).Radius;
+
+                    collision.Penetration = (radius + Radius) - distance;
+                    if (collision.Penetration < 0) return collision;
+                   
+                    collision.Normal = (other.Position - Position).normalized;
+                    collision.Point1 = Position + collision.Normal * Radius;
+                    collision.Point2 = other.Position - collision.Normal * radius;
+
+                    if (collisionType > 2)
+                    {
+                        collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
+                        collision.MassRatio12 = 1 - collision.MassRatio21;
+                    }
+
+                    return collision;
             }
 
-            return Mathf.Infinity;
+            return default;
         }
 
         public override void SetRigidBody(Rigidbody rigidbody)
