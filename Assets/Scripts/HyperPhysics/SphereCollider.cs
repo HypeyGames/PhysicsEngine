@@ -7,7 +7,10 @@ namespace HyperPhysics
     {
         public override ColliderTypes ColliderType => ColliderTypes.Sphere;
 
-        [field: SerializeField] public float Radius { get; set; }
+        [field: SerializeField, Range(.01f, 1000)]
+        public float Radius { get; private set; }
+
+        public override AA3DBB AABB => new(Radius, Position);
 
         public override Collision CheckForCollision(Collider other)
         {
@@ -15,27 +18,17 @@ namespace HyperPhysics
             {
                 case ColliderTypes.Sphere:
 
-                    var collision = new Collision();
-
-                    var collisionType = other.Static ? 0 : 1;
-                    collisionType += Static ? 0 : 2;
-                    collision.CollisionType = (CollisionType)collisionType;
+                    var collision = base.CheckForCollision(other);
 
                     var distance = Vector3.Distance(Position, other.Position);
                     var radius = (other as SphereCollider).Radius;
 
                     collision.Penetration = (radius + Radius) - distance;
                     if (collision.Penetration < 0) return collision;
-                   
+
                     collision.Normal = (other.Position - Position).normalized;
                     collision.Point1 = Position + collision.Normal * Radius;
                     collision.Point2 = other.Position - collision.Normal * radius;
-
-                    if (collisionType > 2)
-                    {
-                        collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
-                        collision.MassRatio12 = 1 - collision.MassRatio21;
-                    }
 
                     return collision;
             }
