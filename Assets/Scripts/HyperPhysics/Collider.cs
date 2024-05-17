@@ -7,30 +7,63 @@ namespace HyperPhysics
     {
         [field: SerializeField] public Rigidbody Rigidbody { get; protected set; }
 
-        //    [SerializeField, Range(.01f, 2)] private float _bouciness;
-
-        public bool Static => Rigidbody == null;
+        public bool Static;
 
         public virtual AA3DBB AABB { get; protected set; }
         public virtual ColliderTypes ColliderType { get; }
-        public Vector3 Acceleration { get; set; }
-        public Vector3 Position => transform.position;
+        public Vector3 Position { get; set; }
+        
+        private bool _intialized;
 
+        private void OnEnable()
+        {
+            Static = Rigidbody == null;
+            if (_intialized)
+            {
+                Initialize();
+            }
+        }
+
+
+        private void Start()
+        {
+            Initialize();
+            _intialized = true;
+        }
+
+        private void Initialize()
+        {
+            Position = transform.position;
+            PhysicsManager.Instance.AddCollider(this);
+        }
+
+        private void OnDisable()
+        {
+            PhysicsManager.Instance.RemoveCollider(this);
+        }
 
         // Note: Collision Normal is wrt 1st object for 2nd object(other) its negative.
         public virtual Collision CheckForCollision(Collider other)
         {
             var collision = new Collision();
-            var collisionType = other.Static ? 0 : 1;
-            collisionType += Static ? 0 : 2;
-            collision.CollisionType = (CollisionType)collisionType;
-            if (collisionType > 2)
+            var collisionType = 0;
+            if (other.Rigidbody != Rigidbody)
             {
-                collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
-                collision.MassRatio12 = 1 - collision.MassRatio21;
+                collisionType = other.Static ? 0 : 1;
+                collisionType += Static ? 0 : 2;
             }
 
+            collision.Body1 = this;
+            collision.Body2 = other;
+            if (collisionType > 2)
+                collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
+            collision.MassRatio12 = 1 - collision.MassRatio21;
+            collision.CollisionType = (CollisionType)collisionType;
             return collision;
+        }
+
+        public virtual void UpdatePenetration(ref Collision collision)
+        {
         }
 
         public bool CheckForOverlap(Collider other)
