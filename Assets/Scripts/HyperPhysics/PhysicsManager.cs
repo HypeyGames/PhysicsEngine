@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using HyperPhysics.MathH;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
+using Vector3 = UnityEngine.Vector3;
 
 namespace HyperPhysics
 {
@@ -54,8 +56,8 @@ namespace HyperPhysics
                 {
                     for (int x = -_physicsWorldSize / 2; x < _physicsWorldSize / 2; x += _boundingBoxSize)
                     {
-                        Vector3 extents = new Vector3(_boundingBoxSize / 2, _boundingBoxSize / 2, _boundingBoxSize / 2);
-                        Vector3 center = new Vector3(x, y, z) + extents;
+                        MathH.Vector3 extents = new MathH.Vector3(_boundingBoxSize / 2, _boundingBoxSize / 2, _boundingBoxSize / 2);
+                        MathH.Vector3 center = new MathH.Vector3(x, y, z) + extents;
                         var aabb = new AA3DBB(extents, center);
                         _bounds.Add(aabb);
                     }
@@ -112,7 +114,7 @@ namespace HyperPhysics
             var acceleration = rb.Force;
             if (rb.Gravity)
             {
-                acceleration += Physics.gravity;
+                acceleration += Physics.gravity.ToVector3FromUnityVector3();
             }
 
             collider.Position += rb.Velocity * Time.fixedDeltaTime + 0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime * acceleration;
@@ -198,7 +200,7 @@ namespace HyperPhysics
                 {
                     case CollisionType.StaticDynamic:
 
-                        accelerationAlongNormal = Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
                         collision.Body2.Position += collision.Normal * collision.Penetration;
                         if (collision.CollisionVelocity < 0) break;
                         if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + accelerationAlongNormal * Time.fixedDeltaTime)
@@ -214,7 +216,7 @@ namespace HyperPhysics
 
                     case CollisionType.DynamicStatic:
 
-                        accelerationAlongNormal = Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
                         collision.Body1.Position -= collision.Penetration * collision.Normal;
                         if (collision.CollisionVelocity < 0) break;
                         if (collision.CollisionVelocity < _sleepThreshold + Mathf.Abs(accelerationAlongNormal) * Time.fixedDeltaTime)
@@ -235,9 +237,9 @@ namespace HyperPhysics
 
                         if (collision.CollisionVelocity < 0) break;
 
-                        accelerationAlongNormal = Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
                         var velocityGained = Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
-                        accelerationAlongNormal = Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
                         velocityGained += Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
                         var velocity = collision.CollisionVelocity * collision.Normal;
                         if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + velocityGained)
@@ -271,18 +273,18 @@ namespace HyperPhysics
                     maxPenetration = Mathf.Max(collision.Penetration, maxPenetration);
                 }
 
-                if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.magnitude < _sleepThreshold)
+                if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.Magnitude < _sleepThreshold)
                 {
-                    _colliders[i].Rigidbody.Velocity = Vector3.zero;
-                    _colliders[i].Position = _colliders[i].transform.position;
+                    _colliders[i].Rigidbody.Velocity = MathH.Vector3.Zero;
+                    _colliders[i].Position = _colliders[i].transform.position.ToVector3FromUnityVector3();
                 }
                 else
                 {
-                    _colliders[i].transform.position = _colliders[i].Position;
+                    _colliders[i].transform.position = _colliders[i].Position.ToUnityVector3FromVector3();
                 }
 
 
-                _colliders[i].Rigidbody.Acceleration = Vector3.zero;
+                _colliders[i].Rigidbody.Acceleration = MathH.Vector3.Zero;
             }
         }
 
@@ -294,9 +296,9 @@ namespace HyperPhysics
             {
                 foreach (var bound in _bounds)
                 {
-                    var color = 2 * bound.Center / _physicsWorldSize;
+                    var color = (2 * bound.Center / _physicsWorldSize).ToUnityVector3FromVector3();
                     Gizmos.color = new Color(color.x, color.y, color.z);
-                    Gizmos.DrawWireCube(bound.Center, bound.Size);
+                    Gizmos.DrawWireCube(bound.Center.ToUnityVector3FromVector3(), bound.Size.ToUnityVector3FromVector3());
                 }
             }
         }

@@ -1,6 +1,5 @@
-using System;
 using System.Globalization;
-using UnityEngine;
+using HyperPhysics.MathH;
 
 namespace HyperPhysics
 {

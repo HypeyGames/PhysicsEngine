@@ -22,28 +22,28 @@ namespace HyperPhysics
                     collision = base.CheckForCollision(other);
 
                     UpdatePenetration(ref collision);
-                    
+
                     if (collision.Penetration < 0)
                     {
                         collision.CollisionType = CollisionType.NotValid;
                         return collision;
                     }
-                    
+
 
                     collision.Normal = (other.Position - Position);
-                    collision.Normal = collision.Normal.normalized;
+                    collision.Normal = collision.Normal.Normalized;
                     collision.Point1 = Position + collision.Normal * Radius;
                     collision.Point2 = other.Position - collision.Normal * (collision.Body2 as SphereCollider).Radius;
 
                     break;
             }
-            
+
             return collision;
         }
 
         public override void UpdatePenetration(ref Collision collision)
         {
-            var distance = Vector3.Distance(Position, collision.Body2.Position);
+            var distance = MathH.Vector3.Distance(Position, collision.Body2.Position);
             var radius = (collision.Body2 as SphereCollider).Radius;
             collision.Penetration = (radius + Radius) - distance;
         }

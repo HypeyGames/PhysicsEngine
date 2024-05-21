@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
+using HyperPhysics.MathH;
 using UnityEngine;
+using Vector3 = HyperPhysics.MathH.Vector3;
 
 namespace HyperPhysics
 {
@@ -35,7 +36,7 @@ namespace HyperPhysics
 
         private void Initialize()
         {
-            Position = transform.position;
+            Position = transform.position.ToVector3FromUnityVector3();
             PhysicsManager.Instance.AddCollider(this);
         }
 
@@ -88,67 +89,6 @@ namespace HyperPhysics
         }
 
         public abstract void SetRigidBody(Rigidbody rigidbody);
-    }
-
-    [Serializable]
-    public struct AA3DBB
-    {
-        public Bounds X;
-        public Bounds Y;
-        public Bounds Z;
-
-        public Vector3 Center;
-        public Vector3 Size;
-
-        public AA3DBB(float radius, Vector3 center)
-        {
-            X = new Bounds(center.x - radius, center.x + radius);
-            Y = new Bounds(center.y - radius, center.y + radius);
-            Z = new Bounds(center.z - radius, center.z + radius);
-            Center = center;
-            Size = (2 * radius) * Vector3.one;
-        }
-
-        public AA3DBB(Vector3 extents, Vector3 center)
-        {
-            X = new Bounds(center.z - extents.z, center.z + extents.z);
-            Y = new Bounds(center.y - extents.y, center.y + extents.y);
-            Z = new Bounds(center.z - extents.z, center.z + extents.z);
-            Center = center;
-            Size = extents * 2;
-        }
-
-        public bool IsOverlapping(AA3DBB other)
-        {
-            if (Center.x < other.Center.x)
-            {
-                if (X.Max < other.X.Min) return false;
-            }
-            else
-            {
-                if (X.Min > other.X.Max) return false;
-            }
-
-            if (Center.y < other.Center.y)
-            {
-                if (Y.Max < other.Y.Min) return false;
-            }
-            else
-            {
-                if (Y.Min > other.Y.Max) return false;
-            }
-
-            if (Center.z < other.Center.z)
-            {
-                if (Z.Max < other.Z.Min) return false;
-            }
-            else
-            {
-                if (Z.Min > other.Z.Max) return false;
-            }
-
-            return true;
-        }
     }
 
     public struct Bounds
