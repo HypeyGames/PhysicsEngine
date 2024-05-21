@@ -10,7 +10,7 @@ namespace HyperPhysics
         [field: SerializeField, Range(.01f, 1000)]
         public float Radius { get; private set; }
 
-        public override AA3DBB AABB => new(Radius, Position);
+        protected override AA3DBB AABB => new(Radius, Position);
 
         public override Collision CheckForCollision(Collider other)
         {
@@ -28,6 +28,7 @@ namespace HyperPhysics
                         collision.CollisionType = CollisionType.NotValid;
                         return collision;
                     }
+                    
 
                     collision.Normal = (other.Position - Position);
                     collision.Normal = collision.Normal.normalized;
@@ -36,7 +37,7 @@ namespace HyperPhysics
 
                     break;
             }
-
+            
             return collision;
         }
 

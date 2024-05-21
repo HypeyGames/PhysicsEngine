@@ -93,6 +93,7 @@ namespace HyperPhysics
                     continue;
                 }
 
+                _colliders[i].ResetCollider();
                 ApplyMotion(_colliders[i]);
                 DetectCollision(i);
             }
@@ -100,7 +101,7 @@ namespace HyperPhysics
             if (_collisions.Count > 0)
                 ResolveCollision();
 
-            UpdateVisual();
+            CollisionPostProcess();
             PostUpdate?.Invoke();
         }
 
@@ -127,6 +128,9 @@ namespace HyperPhysics
                 if (_colliders[i].CheckForOverlap(_colliders[j]) == false) continue;
                 var collision = _colliders[i].CheckForCollision(_colliders[j]);
                 if (collision.CollisionType == CollisionType.NotValid) continue;
+
+                _colliders[i].OnPostCollision(_colliders[j], collision);
+
                 collision.SetCollisionVelocity();
                 _collisions.Add(collision);
             }
@@ -186,8 +190,9 @@ namespace HyperPhysics
 
         private void ProcessCollision(Collision collision)
         {
-            if (collision.CollisionType != CollisionType.NotValid && (collision.Penetration > 0 || collision.CollisionVelocity > 0))
+            if (collision.CollisionType != CollisionType.NotValid)
             {
+                if (collision.Penetration <= 0) return;
                 float accelerationAlongNormal;
                 switch (collision.CollisionType)
                 {
@@ -195,6 +200,7 @@ namespace HyperPhysics
 
                         accelerationAlongNormal = Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
                         collision.Body2.Position += collision.Normal * collision.Penetration;
+                        if (collision.CollisionVelocity < 0) break;
                         if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + accelerationAlongNormal * Time.fixedDeltaTime)
                         {
                             collision.Body2.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
@@ -210,6 +216,7 @@ namespace HyperPhysics
 
                         accelerationAlongNormal = Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
                         collision.Body1.Position -= collision.Penetration * collision.Normal;
+                        if (collision.CollisionVelocity < 0) break;
                         if (collision.CollisionVelocity < _sleepThreshold + Mathf.Abs(accelerationAlongNormal) * Time.fixedDeltaTime)
                         {
                             collision.Body1.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
@@ -225,14 +232,22 @@ namespace HyperPhysics
 
                         collision.Body1.Position -= collision.Normal * (collision.Penetration * collision.MassRatio21);
                         collision.Body2.Position += collision.Normal * (collision.Penetration * collision.MassRatio12);
-                        
-                        if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold)
+
+                        if (collision.CollisionVelocity < 0) break;
+
+                        accelerationAlongNormal = Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
+                        var velocityGained = Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
+                        accelerationAlongNormal = Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
+                        velocityGained += Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
+                        var velocity = collision.CollisionVelocity * collision.Normal;
+                        if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + velocityGained)
                         {
-                            // TODO : Fix bodies under constant force penetrating each other.
+                            // Not an accurate inelastic collision but fair enough.
+                            collision.Body1.Rigidbody.Velocity = collision.Body2.Rigidbody.Velocity + 0.5f * (collision.MassRatio12 - collision.MassRatio21) * velocity;
+                            collision.Body2.Rigidbody.Velocity += collision.MassRatio12 * velocity;
                             break;
                         }
 
-                        var velocity = collision.CollisionVelocity * collision.Normal;
                         collision.Body1.Rigidbody.Velocity = collision.Body2.Rigidbody.Velocity + (collision.MassRatio12 - collision.MassRatio21) * velocity;
                         collision.Body2.Rigidbody.Velocity += 2 * collision.MassRatio12 * velocity;
                         break;
@@ -240,7 +255,7 @@ namespace HyperPhysics
             }
         }
 
-        private void UpdateVisual()
+        private void CollisionPostProcess()
         {
             for (int i = 0; i < _colliders.Count; i++)
             {
@@ -249,7 +264,14 @@ namespace HyperPhysics
                     continue;
                 }
 
-                if (_colliders[i].Rigidbody.Velocity.magnitude < _sleepThreshold)
+                var collisions = _colliders[i].Collisions;
+                var maxPenetration = 0f;
+                foreach (var collision in collisions)
+                {
+                    maxPenetration = Mathf.Max(collision.Penetration, maxPenetration);
+                }
+
+                if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.magnitude < _sleepThreshold)
                 {
                     _colliders[i].Rigidbody.Velocity = Vector3.zero;
                     _colliders[i].Position = _colliders[i].transform.position;

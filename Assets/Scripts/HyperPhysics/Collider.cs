@@ -1,18 +1,20 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HyperPhysics
 {
     public abstract class Collider : MonoBehaviour
     {
-        [field: SerializeField] public Rigidbody Rigidbody { get; protected set; }
-
         public bool Static;
-
-        public virtual AA3DBB AABB { get; protected set; }
+        public IReadOnlyList<Collision> Collisions => _collisions;
+        protected virtual AA3DBB AABB { get; set; }
         public virtual ColliderTypes ColliderType { get; }
         public Vector3 Position { get; set; }
-        
+
+        [field: SerializeField] public Rigidbody Rigidbody { get; protected set; }
+
+        private List<Collision> _collisions = new List<Collision>();
         private bool _intialized;
 
         private void OnEnable()
@@ -56,8 +58,11 @@ namespace HyperPhysics
             collision.Body1 = this;
             collision.Body2 = other;
             if (collisionType > 2)
+            {
                 collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
-            collision.MassRatio12 = 1 - collision.MassRatio21;
+                collision.MassRatio12 = 1 - collision.MassRatio21;
+            }
+               
             collision.CollisionType = (CollisionType)collisionType;
             return collision;
         }
@@ -66,9 +71,20 @@ namespace HyperPhysics
         {
         }
 
+        public void OnPostCollision(Collider other, Collision collision)
+        {
+            _collisions.Add(collision);
+            other._collisions.Add(collision);
+        }
+
         public bool CheckForOverlap(Collider other)
         {
             return AABB.IsOverlapping(other.AABB);
+        }
+
+        public void ResetCollider()
+        {
+            _collisions.Clear();
         }
 
         public abstract void SetRigidBody(Rigidbody rigidbody);
