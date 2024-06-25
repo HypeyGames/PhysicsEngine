@@ -222,7 +222,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &608040057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,22 +241,70 @@ MonoBehaviour:
   _boundingBoxSize: 100
   _physicsWorldSize: 200
   _bounds:
-  - Center: {x: -50, y: -50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: -50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: 50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: 50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: -50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: -50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: 50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: 50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
   _sleepThreshold: 0.1
   _collisionSubstep: 10
   _debug: 0
@@ -384,7 +432,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &761661804
 Transform:
   m_ObjectHideFlags: 0
@@ -467,11 +515,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 1, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 0
-  <Force>k__BackingField: {x: 0, y: 0, z: 10}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!1 &786319562
 GameObject:
   m_ObjectHideFlags: 0
@@ -519,11 +576,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 0, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 1
-  <Force>k__BackingField: {x: 0, y: 0, z: 0}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!114 &786319565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,6 +780,59 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 986621209}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1180757369
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1180757371}
+  - component: {fileID: 1180757370}
+  m_Layer: 0
+  m_Name: New Sub Scene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1180757370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1180757369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45a335734b1572644a6a5d09d87adc65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _SceneAsset: {fileID: 102900000, guid: 332ed7c9bdba8244fbc2e220913b95ad, type: 3}
+  _HierarchyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  AutoLoadScene: 1
+  _SceneGUID:
+    Value:
+      x: 2625495603
+      y: 1143516123
+      z: 36580543
+      w: 3663311641
+--- !u!4 &1180757371
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1180757369}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1204733537
 GameObject:
   m_ObjectHideFlags: 0
@@ -776,11 +895,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 1, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 0
-  <Force>k__BackingField: {x: 0, y: 0, z: -10}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!1 &1310539893
 GameObject:
   m_ObjectHideFlags: 0
@@ -1134,3 +1262,4 @@ SceneRoots:
   - {fileID: 705507995}
   - {fileID: 608040058}
   - {fileID: 761661804}
+  - {fileID: 1180757371}
