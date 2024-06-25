@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Pool;
+using Vector3 = HyperPhysics.MathH.Vector3;
 
 namespace HyperPhysics
 {
@@ -10,7 +11,8 @@ namespace HyperPhysics
         [field: SerializeField] public Vector3 Acceleration { get; set; }
         [field: SerializeField] public float Damping { get; set; }
         [field: SerializeField] public bool Gravity { get; set; }
-
+        
+        [field: SerializeField] public Vector3 Force { get; set; }
         private void OnValidate()
         {
             ListPool<Collider>.Get(out var colliders);

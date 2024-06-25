@@ -10,30 +10,42 @@ namespace HyperPhysics
         [field: SerializeField, Range(.01f, 1000)]
         public float Radius { get; private set; }
 
-        public override AA3DBB AABB => new(Radius, Position);
+        protected override AA3DBB AABB => new(Radius, Position);
 
         public override Collision CheckForCollision(Collider other)
         {
+            Collision collision = default;
             switch (other.ColliderType)
             {
                 case ColliderTypes.Sphere:
 
-                    var collision = base.CheckForCollision(other);
+                    collision = base.CheckForCollision(other);
 
-                    var distance = Vector3.Distance(Position, other.Position);
-                    var radius = (other as SphereCollider).Radius;
+                    UpdatePenetration(ref collision);
 
-                    collision.Penetration = (radius + Radius) - distance;
-                    if (collision.Penetration < 0) return collision;
+                    if (collision.Penetration < 0)
+                    {
+                        collision.CollisionType = CollisionType.NotValid;
+                        return collision;
+                    }
 
-                    collision.Normal = (other.Position - Position).normalized;
+
+                    collision.Normal = (other.Position - Position);
+                    collision.Normal = collision.Normal.Normalized;
                     collision.Point1 = Position + collision.Normal * Radius;
-                    collision.Point2 = other.Position - collision.Normal * radius;
+                    collision.Point2 = other.Position - collision.Normal * (collision.Body2 as SphereCollider).Radius;
 
-                    return collision;
+                    break;
             }
 
-            return default;
+            return collision;
+        }
+
+        public override void UpdatePenetration(ref Collision collision)
+        {
+            var distance = MathH.Vector3.Distance(Position, collision.Body2.Position);
+            var radius = (collision.Body2 as SphereCollider).Radius;
+            collision.Penetration = (radius + Radius) - distance;
         }
 
         public override void SetRigidBody(Rigidbody rigidbody)
