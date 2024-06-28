@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HyperPhysics.MathH;
 using UnityEngine;
+using Quaternion = HyperPhysics.MathH.Quaternion;
 using Vector3 = HyperPhysics.MathH.Vector3;
 
 namespace HyperPhysics
@@ -12,6 +13,7 @@ namespace HyperPhysics
         protected virtual AA3DBB AABB { get; set; }
         public virtual ColliderTypes ColliderType { get; }
         public Vector3 Position { get; set; }
+        [field: SerializeField] public Quaternion Rotation { get; set; }
 
         [field: SerializeField] public Rigidbody Rigidbody { get; protected set; }
 
@@ -36,7 +38,8 @@ namespace HyperPhysics
 
         private void Initialize()
         {
-            Position = transform.position.ToVector3FromUnityVector3();
+            Position = transform.position.FromUnityVector3();
+            Rotation = transform.rotation.FromUnityQuaternion();
             PhysicsManager.Instance.AddCollider(this);
         }
 
@@ -63,7 +66,7 @@ namespace HyperPhysics
                 collision.MassRatio21 = other.Rigidbody.Mass / (Rigidbody.Mass + other.Rigidbody.Mass);
                 collision.MassRatio12 = 1 - collision.MassRatio21;
             }
-               
+
             collision.CollisionType = (CollisionType)collisionType;
             return collision;
         }

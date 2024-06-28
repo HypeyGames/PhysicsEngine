@@ -4,6 +4,7 @@ using HyperPhysics.MathH;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
+using Quaternion = HyperPhysics.MathH.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 
 namespace HyperPhysics
@@ -114,12 +115,17 @@ namespace HyperPhysics
             var acceleration = rb.Force;
             if (rb.Gravity)
             {
-                acceleration += Physics.gravity.ToVector3FromUnityVector3();
+                acceleration += Physics.gravity.FromUnityVector3();
             }
 
             collider.Position += rb.Velocity * Time.fixedDeltaTime + 0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime * acceleration;
             rb.Velocity += acceleration * Time.fixedDeltaTime;
             rb.Acceleration = acceleration;
+
+
+            var rotation = rb.AngularVelocity * Time.fixedDeltaTime + 0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime * collider.Rigidbody.AngularAcceleration;
+            collider.Rotation = Quaternion.RotateByScaledVector(collider.Rotation, rotation, Time.fixedDeltaTime);
+            collider.Rotation = collider.Rotation.Normalize();
         }
 
         private void DetectCollision(int i)
@@ -276,13 +282,14 @@ namespace HyperPhysics
                 if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.Magnitude < _sleepThreshold)
                 {
                     _colliders[i].Rigidbody.Velocity = MathH.Vector3.Zero;
-                    _colliders[i].Position = _colliders[i].transform.position.ToVector3FromUnityVector3();
+                    _colliders[i].Position = _colliders[i].transform.position.FromUnityVector3();
                 }
                 else
                 {
-                    _colliders[i].transform.position = _colliders[i].Position.ToUnityVector3FromVector3();
+                    _colliders[i].transform.position = _colliders[i].Position.ToUnityVector3();
                 }
 
+                _colliders[i].transform.rotation = _colliders[i].Rotation.ToUnityQuaternion();
 
                 _colliders[i].Rigidbody.Acceleration = MathH.Vector3.Zero;
             }
@@ -296,9 +303,9 @@ namespace HyperPhysics
             {
                 foreach (var bound in _bounds)
                 {
-                    var color = (2 * bound.Center / _physicsWorldSize).ToUnityVector3FromVector3();
+                    var color = (2 * bound.Center / _physicsWorldSize).ToUnityVector3();
                     Gizmos.color = new Color(color.x, color.y, color.z);
-                    Gizmos.DrawWireCube(bound.Center.ToUnityVector3FromVector3(), bound.Size.ToUnityVector3FromVector3());
+                    Gizmos.DrawWireCube(bound.Center.ToUnityVector3(), bound.Size.ToUnityVector3());
                 }
             }
         }

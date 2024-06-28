@@ -241,22 +241,70 @@ MonoBehaviour:
   _boundingBoxSize: 100
   _physicsWorldSize: 200
   _bounds:
-  - Center: {x: -50, y: -50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: -50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: 50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: 50, z: -50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: -50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: -50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: -50, y: 50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
-  - Center: {x: 50, y: 50, z: 50}
-    Size: {x: 100, y: 100, z: 100}
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
+  - Center:
+      X: 0
+      Y: 0
+      Z: 0
+    Size:
+      X: 0
+      Y: 0
+      Z: 0
   _sleepThreshold: 0.1
   _collisionSubstep: 10
   _debug: 0
@@ -467,11 +515,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 1, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 0
-  <Force>k__BackingField: {x: 0, y: 0, z: 10}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!1 &786319562
 GameObject:
   m_ObjectHideFlags: 0
@@ -519,11 +576,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 0, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 1
-  <Force>k__BackingField: {x: 0, y: 0, z: 0}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!114 &786319565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -776,11 +842,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Mass>k__BackingField: 1
-  <Velocity>k__BackingField: {x: 0, y: 1, z: 0}
-  <Acceleration>k__BackingField: {x: 0, y: 0, z: 0}
+  <Velocity>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
+  <Acceleration>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
   <Damping>k__BackingField: 0
   <Gravity>k__BackingField: 0
-  <Force>k__BackingField: {x: 0, y: 0, z: -10}
+  <Force>k__BackingField:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!1 &1310539893
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,6 +867,7 @@ GameObject:
   - component: {fileID: 1310539894}
   - component: {fileID: 1310539896}
   - component: {fileID: 1310539895}
+  - component: {fileID: 1310539897}
   m_Layer: 0
   m_Name: Sphere (1)
   m_TagString: Untagged
@@ -864,6 +940,23 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1310539893}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1310539897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310539893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 339f4b2e48534145a4f5039ffdeb6db0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  values:
+  - 0
+  - 0
+  - 0
+  - 0
 --- !u!1 &1597057832
 GameObject:
   m_ObjectHideFlags: 0

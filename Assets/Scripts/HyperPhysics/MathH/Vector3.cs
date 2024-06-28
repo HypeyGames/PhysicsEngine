@@ -81,12 +81,12 @@ namespace HyperPhysics.MathH
 
     public static class Vector3Ext
     {
-        public static Vector3 ToVector3FromUnityVector3(this UnityEngine.Vector3 vector3)
+        public static Vector3 FromUnityVector3(this UnityEngine.Vector3 vector3)
         {
             return new Vector3(vector3.x, vector3.y, vector3.z);
         }
 
-        public static UnityEngine.Vector3 ToUnityVector3FromVector3(this Vector3 vector3)
+        public static UnityEngine.Vector3 ToUnityVector3(this Vector3 vector3)
         {
             return new UnityEngine.Vector3(vector3.X, vector3.Y, vector3.Z);
         }

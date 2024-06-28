@@ -1,5 +1,8 @@
-﻿namespace HyperPhysics.MathH
+﻿using System;
+
+namespace HyperPhysics.MathH
 {
+    [Serializable]
     public unsafe struct Quaternion
     {
         public fixed float Value[4];
