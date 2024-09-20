@@ -3,7 +3,7 @@
     public enum ColliderTypes
     {
         Sphere,
-        Cube,
+        Box,
         Capsule,
         Convex,
         Concave

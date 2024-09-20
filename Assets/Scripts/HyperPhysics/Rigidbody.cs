@@ -1,10 +1,10 @@
+using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Pool;
-using Quaternion = HyperPhysics.MathH.Quaternion;
-using Vector3 = HyperPhysics.MathH.Vector3;
 
 namespace HyperPhysics
 {
+    [BurstCompile]
     public class Rigidbody : MonoBehaviour
     {
         [field: SerializeField] public float Mass { get; set; } = 1;
@@ -33,18 +33,18 @@ namespace HyperPhysics
         {
             Matrix4x4 matrix4X4 = new Matrix4x4
             {
-                [00] = 1 - 2 * (rotation.Y * rotation.Y + rotation.Z * rotation.Z),
-                [04] = 2 * (rotation.X * rotation.Y + rotation.Z * rotation.W),
-                [08] = 2 * (rotation.X * rotation.Z - rotation.Y * rotation.W),
-                [12] = position.X,
-                [01] = 2 * (rotation.X * rotation.Y - rotation.Z * rotation.W),
-                [05] = 1 - 2 * (rotation.X * rotation.X + rotation.Z * rotation.Z),
-                [09] = 2 * (rotation.Y * rotation.Z - rotation.X * rotation.W),
-                [13] = position.Y,
-                [02] = 2 * (rotation.X * rotation.Z + rotation.Y * rotation.W),
-                [06] = 2 * (rotation.Y * rotation.Z - rotation.X * rotation.W),
-                [10] = 1 - 2 * (rotation.X * rotation.X + rotation.Y * rotation.Y),
-                [14] = position.Z,
+                [00] = 1 - 2 * (rotation.y * rotation.y + rotation.z * rotation.z),
+                [04] = 2 * (rotation.x * rotation.y + rotation.z * rotation.w),
+                [08] = 2 * (rotation.x * rotation.z - rotation.y * rotation.w),
+                [12] = position.x,
+                [01] = 2 * (rotation.x * rotation.y - rotation.z * rotation.w),
+                [05] = 1 - 2 * (rotation.x * rotation.x + rotation.z * rotation.z),
+                [09] = 2 * (rotation.y * rotation.z - rotation.x * rotation.w),
+                [13] = position.y,
+                [02] = 2 * (rotation.x * rotation.z + rotation.y * rotation.w),
+                [06] = 2 * (rotation.y * rotation.z - rotation.x * rotation.w),
+                [10] = 1 - 2 * (rotation.x* rotation.x + rotation.y * rotation.y),
+                [14] = position.z,
                 [15] = 1
             };
         }

@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using HyperPhysics.MathH;
+using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
-using Quaternion = HyperPhysics.MathH.Quaternion;
-using Vector3 = UnityEngine.Vector3;
 
 namespace HyperPhysics
 {
+    [BurstCompile]
     public class PhysicsManager : MonoBehaviour
     {
-        public static PhysicsManager Instance;
-
-        [SerializeField] private List<Collider> _colliders = new List<Collider>(256);
-
         [SerializeField] private int _boundingBoxSize;
         [SerializeField] private int _physicsWorldSize;
         [SerializeField] private List<AA3DBB> _bounds = new List<AA3DBB>();
@@ -22,7 +17,9 @@ namespace HyperPhysics
         [SerializeField, Range(1, 10)] private int _collisionSubstep;
         [SerializeField] private bool _debug;
 
-        private List<Collision> _collisions = new List<Collision>(256);
+        private readonly List<Collision> _collisions = new(512 * 512);
+
+        private List<Collider> _colliders;
 
         public event Action Update;
         public event Action PostUpdate;
@@ -31,6 +28,7 @@ namespace HyperPhysics
 
         public void RegisterSceneColliders()
         {
+            _colliders = new List<Collider>();
             _colliders.Clear();
             var scene = SceneManager.GetActiveScene();
             ListPool<GameObject>.Get(out var rootGameObjects);
@@ -44,44 +42,33 @@ namespace HyperPhysics
 
             ListPool<GameObject>.Release(rootGameObjects);
             ListPool<Collider>.Release(colliders);
-            GenerateBoundingBoxes();
+       //     GenerateBoundingBoxes();
         }
 
-        private void GenerateBoundingBoxes()
-        {
-            if (_boundingBoxSize <= 0 || _physicsWorldSize <= 0) return;
-            _bounds.Clear();
-            for (int z = -_physicsWorldSize / 2; z < _physicsWorldSize / 2; z += _boundingBoxSize)
-            {
-                for (int y = -_physicsWorldSize / 2; y < _physicsWorldSize / 2; y += _boundingBoxSize)
-                {
-                    for (int x = -_physicsWorldSize / 2; x < _physicsWorldSize / 2; x += _boundingBoxSize)
-                    {
-                        MathH.Vector3 extents = new MathH.Vector3(_boundingBoxSize / 2, _boundingBoxSize / 2, _boundingBoxSize / 2);
-                        MathH.Vector3 center = new MathH.Vector3(x, y, z) + extents;
-                        var aabb = new AA3DBB(extents, center);
-                        _bounds.Add(aabb);
-                    }
-                }
-            }
-        }
+        // private void GenerateBoundingBoxes()
+        // {
+        //     if (_boundingBoxSize <= 0 || _physicsWorldSize <= 0) return;
+        //     _bounds.Clear();
+        //     for (int z = -_physicsWorldSize / 2; z < _physicsWorldSize / 2; z += _boundingBoxSize)
+        //     {
+        //         for (int y = -_physicsWorldSize / 2; y < _physicsWorldSize / 2; y += _boundingBoxSize)
+        //         {
+        //             for (int x = -_physicsWorldSize / 2; x < _physicsWorldSize / 2; x += _boundingBoxSize)
+        //             {
+        //                 Vector3 extents = new Vector3(_boundingBoxSize / 2, _boundingBoxSize / 2, _boundingBoxSize / 2);
+        //                 Vector3 center = new Vector3(x, y, z) + extents;
+        //                 var aabb = new AA3DBB(extents, center);
+        //                 _bounds.Add(aabb);
+        //             }
+        //         }
+        //     }
+        // }
 
         #endregion
 
         private void Awake()
         {
-            Instance = this;
-            _colliders.Clear();
-        }
-
-        public void AddCollider(Collider collider)
-        {
-            _colliders.Add(collider);
-        }
-
-        public void RemoveCollider(Collider collider)
-        {
-            _colliders.Remove(collider);
+            _colliders = HyperPhysics.Instance.GetCollider();
         }
 
         private void FixedUpdate()
@@ -115,7 +102,7 @@ namespace HyperPhysics
             var acceleration = rb.Force;
             if (rb.Gravity)
             {
-                acceleration += Physics.gravity.FromUnityVector3();
+                acceleration += Physics.gravity;
             }
 
             collider.Position += rb.Velocity * Time.fixedDeltaTime + 0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime * acceleration;
@@ -124,8 +111,8 @@ namespace HyperPhysics
 
 
             var rotation = rb.AngularVelocity * Time.fixedDeltaTime + 0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime * collider.Rigidbody.AngularAcceleration;
-            collider.Rotation = Quaternion.RotateByScaledVector(collider.Rotation, rotation, Time.fixedDeltaTime);
-            collider.Rotation = collider.Rotation.Normalize();
+            var rotationQuaternion = Quaternion.Euler(rotation);
+            collider.Rotation *= rotationQuaternion;
         }
 
         private void DetectCollision(int i)
@@ -151,8 +138,9 @@ namespace HyperPhysics
             do
             {
                 stepCount++;
-                if (_collisions.Count > 1)
-                    _collisions.Sort(SortByCollisions);
+                // TODO find a way to do this without GC allocation.
+                // if (_collisions.Count > 1)
+                //     _collisions.Sort(SortByCollisions);
                 fullCollided = true;
                 for (int i = 0; i < _collisions.Count; i++)
                 {
@@ -202,50 +190,53 @@ namespace HyperPhysics
             {
                 if (collision.Penetration <= 0) return;
                 float accelerationAlongNormal;
+                var body2 = collision.Body2;
+                var body1 = collision.Body1;
                 switch (collision.CollisionType)
                 {
                     case CollisionType.StaticDynamic:
 
-                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
-                        collision.Body2.Position += collision.Normal * collision.Penetration;
+                        accelerationAlongNormal = Vector3.Dot(body2.Rigidbody.Acceleration, collision.Normal);
+                        // Resolving penetration.
+                        body2.Position += collision.Normal * collision.Penetration;
                         if (collision.CollisionVelocity < 0) break;
                         if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + accelerationAlongNormal * Time.fixedDeltaTime)
                         {
-                            collision.Body2.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
+                            body2.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
                         }
                         else
                         {
-                            collision.Body2.Rigidbody.Velocity -= 2 * collision.CollisionVelocity * collision.Normal;
+                            body2.Rigidbody.Velocity -= 2 * body1.Bounciness * body2.Bounciness * collision.CollisionVelocity * collision.Normal;
                         }
 
                         break;
 
                     case CollisionType.DynamicStatic:
 
-                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
-                        collision.Body1.Position -= collision.Penetration * collision.Normal;
+                        accelerationAlongNormal = Vector3.Dot(body1.Rigidbody.Acceleration, collision.Normal);
+                        body1.Position -= collision.Penetration * collision.Normal;
                         if (collision.CollisionVelocity < 0) break;
                         if (collision.CollisionVelocity < _sleepThreshold + Mathf.Abs(accelerationAlongNormal) * Time.fixedDeltaTime)
                         {
-                            collision.Body1.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
+                            body1.Rigidbody.Velocity -= collision.CollisionVelocity * collision.Normal;
                         }
                         else
                         {
-                            collision.Body1.Rigidbody.Velocity -= 2 * collision.CollisionVelocity * collision.Normal;
+                            body1.Rigidbody.Velocity -= 2 * body1.Bounciness * body2.Bounciness * collision.CollisionVelocity * collision.Normal;
                         }
 
                         break;
 
                     case CollisionType.DynamicDynamic:
 
-                        collision.Body1.Position -= collision.Normal * (collision.Penetration * collision.MassRatio21);
-                        collision.Body2.Position += collision.Normal * (collision.Penetration * collision.MassRatio12);
+                        body1.Position -= collision.Normal * (collision.Penetration * collision.MassRatio21);
+                        body2.Position += collision.Normal * (collision.Penetration * collision.MassRatio12);
 
                         if (collision.CollisionVelocity < 0) break;
 
-                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = Vector3.Dot(collision.Body1.Rigidbody.Acceleration, collision.Normal);
                         var velocityGained = Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
-                        accelerationAlongNormal = MathH.Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
+                        accelerationAlongNormal = Vector3.Dot(collision.Body2.Rigidbody.Acceleration, collision.Normal);
                         velocityGained += Mathf.Abs(accelerationAlongNormal * Time.deltaTime);
                         var velocity = collision.CollisionVelocity * collision.Normal;
                         if (Mathf.Abs(collision.CollisionVelocity) < _sleepThreshold + velocityGained)
@@ -274,24 +265,24 @@ namespace HyperPhysics
 
                 var collisions = _colliders[i].Collisions;
                 var maxPenetration = 0f;
-                foreach (var collision in collisions)
+                for (int j = 0; j < collisions.Count; j++)
                 {
-                    maxPenetration = Mathf.Max(collision.Penetration, maxPenetration);
+                    maxPenetration = Mathf.Max(collisions[j].Penetration, maxPenetration);
                 }
 
-                if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.Magnitude < _sleepThreshold)
+                if (collisions.Count > 0 && _colliders[i].Rigidbody.Velocity.magnitude < _sleepThreshold)
                 {
-                    _colliders[i].Rigidbody.Velocity = MathH.Vector3.Zero;
-                    _colliders[i].Position = _colliders[i].transform.position.FromUnityVector3();
+                    _colliders[i].Rigidbody.Velocity = Vector3.zero;
+                    _colliders[i].Position = _colliders[i].transform.position;
                 }
                 else
                 {
-                    _colliders[i].transform.position = _colliders[i].Position.ToUnityVector3();
+                    _colliders[i].transform.position = _colliders[i].Position;
                 }
 
-                _colliders[i].transform.rotation = _colliders[i].Rotation.ToUnityQuaternion();
+                _colliders[i].transform.rotation = _colliders[i].Rotation;
 
-                _colliders[i].Rigidbody.Acceleration = MathH.Vector3.Zero;
+                _colliders[i].Rigidbody.Acceleration = Vector3.zero;
             }
         }
 
@@ -299,15 +290,15 @@ namespace HyperPhysics
 
         private void OnDrawGizmosSelected()
         {
-            if (_debug && _boundingBoxSize > 0 && _physicsWorldSize > 0)
-            {
-                foreach (var bound in _bounds)
-                {
-                    var color = (2 * bound.Center / _physicsWorldSize).ToUnityVector3();
-                    Gizmos.color = new Color(color.x, color.y, color.z);
-                    Gizmos.DrawWireCube(bound.Center.ToUnityVector3(), bound.Size.ToUnityVector3());
-                }
-            }
+            // if (_debug && _boundingBoxSize > 0 && _physicsWorldSize > 0)
+            // {
+            //     foreach (var bound in _bounds)
+            //     {
+            //         var color = (2 * bound.Center / _physicsWorldSize);
+            //         Gizmos.color = new Color(color.x, color.y, color.z);
+            //         Gizmos.DrawWireCube(bound.Center, bound.Size);
+            //     }
+            // }
         }
 
         #endregion

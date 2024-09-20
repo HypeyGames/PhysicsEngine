@@ -1,51 +1,47 @@
+using System;
 using System.Collections.Generic;
-using HyperPhysics.MathH;
+using Unity.Burst;
 using UnityEngine;
-using Quaternion = HyperPhysics.MathH.Quaternion;
-using Vector3 = HyperPhysics.MathH.Vector3;
+#if Physics_Debug
+using UnityEditor;
+#endif
 
 namespace HyperPhysics
 {
-    public abstract class Collider : MonoBehaviour
+    [BurstCompile, SelectionBase]
+    public class Collider : MonoBehaviour
     {
         public bool Static;
         public IReadOnlyList<Collision> Collisions => _collisions;
         protected virtual AA3DBB AABB { get; set; }
         public virtual ColliderTypes ColliderType { get; }
-        public Vector3 Position { get; set; }
+        public Vector3 Position;
+
         [field: SerializeField] public Quaternion Rotation { get; set; }
+
+        [field: SerializeField, Range(0, 1)] public float Bounciness { get; set; } = 1;
 
         [field: SerializeField] public Rigidbody Rigidbody { get; protected set; }
 
-        private List<Collision> _collisions = new List<Collision>();
-        private bool _intialized;
+        private List<Collision> _collisions = new(32);
 
         private void OnEnable()
         {
             Static = Rigidbody == null;
-            if (_intialized)
-            {
-                Initialize();
-            }
+            var colliderTransform = transform;
+            Position = colliderTransform.position;
+            Rotation = colliderTransform.rotation;
+            HyperPhysics.Instance.AddCollider(this);
         }
 
-
-        private void Start()
+        public void SetRigidBody(Rigidbody rigidbody)
         {
-            Initialize();
-            _intialized = true;
-        }
-
-        private void Initialize()
-        {
-            Position = transform.position.FromUnityVector3();
-            Rotation = transform.rotation.FromUnityQuaternion();
-            PhysicsManager.Instance.AddCollider(this);
+            Rigidbody = rigidbody;
         }
 
         private void OnDisable()
         {
-            PhysicsManager.Instance.RemoveCollider(this);
+            HyperPhysics.Instance.RemoveCollider(this);
         }
 
         // Note: Collision Normal is wrt 1st object for 2nd object(other) its negative.
@@ -90,19 +86,42 @@ namespace HyperPhysics
         {
             _collisions.Clear();
         }
+#if UNITY_EDITOR
 
-        public abstract void SetRigidBody(Rigidbody rigidbody);
+        protected void DrawBoundingBox(AA3DBB aa3Dbb)
+        {
+#if Physics_Debug
+            Handles.color = Color.red;
+            Handles.DrawWireCube(transform.position, new Vector3(aa3Dbb.X.Size, aa3Dbb.Y.Size, aa3Dbb.Z.Size));
+#endif
+        }
+
+#endif
     }
 
+    [Serializable]
     public struct Bounds
     {
         public float Min;
         public float Max;
+        public float Center => (Min + Max) / 2;
+        public float Size => Max - Min;
+
 
         public Bounds(float min, float max)
         {
             Min = min;
             Max = max;
         }
+
+        public void Encapsulate(Bounds bounds)
+        {
+            Min = Mathf.Min(bounds.Min, Min);
+            Max = Mathf.Max(bounds.Max, Max);
+        }
+    }
+
+    public static class CollisionExt
+    {
     }
 }

@@ -1,5 +1,5 @@
 using System.Globalization;
-using HyperPhysics.MathH;
+using UnityEngine;
 
 namespace HyperPhysics
 {
@@ -16,6 +16,43 @@ namespace HyperPhysics
         public float CollisionVelocity;
 
         public CollisionType CollisionType;
+
+        public void Inverse()
+        {
+            (Point1, Point2) = (Point2, Point1);
+            (Body1, Body2) = (Body2, Body1);
+            Normal = -Normal;
+            (MassRatio12, MassRatio21) = (MassRatio21, MassRatio12);
+            CollisionType = CollisionType switch
+            {
+                CollisionType.StaticDynamic => CollisionType.DynamicStatic,
+                CollisionType.DynamicStatic => CollisionType.StaticDynamic,
+                _ => CollisionType
+            };
+        }
+
+        public static Collision operator ~(Collision collision)
+        {
+            var result = new Collision
+            {
+                Point1 = collision.Point2,
+                Point2 = collision.Point1,
+                Normal = -collision.Normal,
+                Penetration = collision.Penetration,
+                Body2 = collision.Body1,
+                Body1 = collision.Body2,
+                MassRatio12 = collision.MassRatio21,
+                MassRatio21 = collision.MassRatio12,
+                CollisionType = collision.CollisionType switch
+                {
+                    CollisionType.StaticDynamic => CollisionType.DynamicStatic,
+                    CollisionType.DynamicStatic => CollisionType.StaticDynamic,
+                    _ => collision.CollisionType
+                }
+            };
+
+            return result;
+        }
 
         public void SetCollisionVelocity()
         {
@@ -36,7 +73,7 @@ namespace HyperPhysics
 
         public void UpdatePenetration()
         {
-           Body1.UpdatePenetration(ref this);
+            Body1.UpdatePenetration(ref this);
         }
 
         public override string ToString() => $"Normal{Normal.ToString()}::Point={Point1.ToString()},{Point2.ToString()}::Penetration{Penetration.ToString(CultureInfo.InvariantCulture)}";

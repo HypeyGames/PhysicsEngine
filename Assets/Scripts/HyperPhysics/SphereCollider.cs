@@ -15,45 +15,66 @@ namespace HyperPhysics
         public override Collision CheckForCollision(Collider other)
         {
             Collision collision = default;
+            collision = base.CheckForCollision(other);
+            var hyperPhysics = HyperPhysics.Instance;
+
             switch (other.ColliderType)
             {
                 case ColliderTypes.Sphere:
-
-                    collision = base.CheckForCollision(other);
-
-                    UpdatePenetration(ref collision);
-
-                    if (collision.Penetration < 0)
-                    {
-                        collision.CollisionType = CollisionType.NotValid;
-                        return collision;
-                    }
-
-
-                    collision.Normal = (other.Position - Position);
-                    collision.Normal = collision.Normal.Normalized;
-                    collision.Point1 = Position + collision.Normal * Radius;
-                    collision.Point2 = other.Position - collision.Normal * (collision.Body2 as SphereCollider).Radius;
-
+                    CalculateCollisionInternal(ref collision, this, other as SphereCollider);
+                    break;
+                case ColliderTypes.Box:
+                    hyperPhysics.UpdatePenetration(ref collision, other as BoxCollider, this, false);
+                    hyperPhysics.CalculateCollision(ref collision);
                     break;
             }
 
             return collision;
         }
 
+        private void CalculateCollisionInternal(ref Collision collision, SphereCollider collider1, SphereCollider collider2)
+        {
+            UpdatePenetration(ref collision);
+            if (collision.Penetration < 0)
+            {
+                collision.CollisionType = CollisionType.NotValid;
+            }
+
+
+            collision.Normal = (collider2.Position - collider1.Position);
+            collision.Normal = collision.Normal.normalized;
+            collision.Point1 = collider1.Position + collision.Normal * collider1.Radius;
+            collision.Point2 = collider2.Position - collision.Normal * collider2.Radius;
+        }
+
         public override void UpdatePenetration(ref Collision collision)
         {
-            var distance = MathH.Vector3.Distance(Position, collision.Body2.Position);
-            var radius = (collision.Body2 as SphereCollider).Radius;
+            switch (collision.Body2.ColliderType)
+            {
+                case ColliderTypes.Sphere:
+                    UpdatePenetrationInternal(ref collision, collision.Body2 as SphereCollider);
+                    break;
+                case ColliderTypes.Box:
+                    HyperPhysics.Instance.UpdatePenetration(ref collision, collision.Body2 as BoxCollider, this, false);
+                    break;
+            }
+        }
+
+        private void UpdatePenetrationInternal(ref Collision collision, SphereCollider other)
+        {
+            var distance = Vector3.Distance(Position, collision.Body2.Position);
+            var radius = other.Radius;
             collision.Penetration = (radius + Radius) - distance;
         }
-
-        public override void SetRigidBody(Rigidbody rigidbody)
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
         {
-            Rigidbody = rigidbody;
+            var aabb = new AA3DBB(Radius, transform.position);
+            DrawBoundingBox(aabb);
+            DrawSphereCollider();
         }
 
-        private void OnDrawGizmosSelected()
+        private void DrawSphereCollider()
         {
             Handles.matrix = transform.localToWorldMatrix;
             Handles.color = new Color(.5f, 1, .5f, 0.5f);
@@ -80,5 +101,6 @@ namespace HyperPhysics
                 Handles.DrawWireDisc(position - num0 * normal / sqrMagnitude, normal, num2);
             }
         }
+#endif
     }
 }
